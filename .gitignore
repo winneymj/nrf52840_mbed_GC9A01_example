@@ -2,3 +2,4 @@
 **/.hg
 **/.lock
 /mbed-os
+/__pycache__
