@@ -3,3 +3,4 @@
 **/.lock
 /mbed-os
 /__pycache__
+/__pycache__/mbed_settings.cpython-37.pyc
