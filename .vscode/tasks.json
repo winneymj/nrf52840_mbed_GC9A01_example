@@ -25,10 +25,7 @@
     "tasks": [
         {
             "label": "compile release",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
+            "group": "build",
             "command": "mbed",
             "args": [
                 "compile",
@@ -37,9 +34,50 @@
                 "-t",
                 "GCC_ARM",
                 "-m",
-                "NRF52840_MDK",
-                "--flash"
+                "NRF52840_FEATHER"
             ]
+        },
+        {
+            "label": "hex to DFU pkg",
+            "group": "build",
+            "command": "adafruit-nrfutil",
+            "args": [
+                "dfu",
+                "genpkg",
+                "--dev-type",
+                "0x0052",
+                "--sd-req",
+                "0x00B6",
+                "--application",
+                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex",
+                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.zip"
+            ]
+        },
+        {
+            "label": "flash DFU pkg",
+            "group": "build",
+            "command": "adafruit-nrfutil",
+            "args": [
+                "--verbose",
+                "dfu",
+                "serial",
+                "--package",
+                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.zip",
+                "-p",
+                "COM7",
+                "-b",
+                "115200",
+                "--singlebank"
+            ]
+        },
+        {
+            "label": "Build Release",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOrder": "sequence",
+            "dependsOn": ["compile release", "hex to DFU pkg", "flash DFU pkg"]
         },
         {
             "label": "compile debug",
@@ -51,7 +89,7 @@
                 "-t",
                 "GCC_ARM",
                 "-m",
-                "NRF52840_MDK",
+                "NRF52840_FEATHER",
                 "--flash"
             ]
         },
@@ -65,7 +103,7 @@
                 "-t",
                 "GCC_ARM",
                 "-m",
-                "NRF52840_MDK",
+                "NRF52840_FEATHER",
                 "--flash"
             ]
         }
@@ -94,7 +132,7 @@
 //             "message": 5
 //         }
 //     },
-//     "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "NRF52840_MDK"],
+//     "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "NRF52840_FEATHER"],
 //     "windows": {
 //         "command": "mbed.exe"
 //     }
@@ -123,7 +161,7 @@
 //                 "panel": "shared"
 //             },
 //             // arg passing example: in this case is executed make QUIET=0
-//             "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "NRF52840_MDK"],
+//             "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "NRF52840_FEATHER"],
 //             // Use the standard less compilation problem matcher.
 //             "problemMatcher": {
 //                 "owner": "cpp",
