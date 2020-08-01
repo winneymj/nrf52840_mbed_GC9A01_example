@@ -162,17 +162,19 @@ void pebble_circle_watchface(void) {
 // main() runs in its own thread in the OS
 int main()
 {
+  printf("main: ENTER\r\n");
+
   // Initalize the display driver GC9A01
   GC9A01_init();
 
-   printf("main: GC9A01_init() done\r\n");
+  printf("main: GC9A01_init() done\r\n");
 
   lv_init();
 
   printf("main: lv_init() done\r\n");
   static lv_disp_buf_t disp_buf;
-  static lv_color_t buf[LV_HOR_RES_MAX * 5];
-  lv_disp_buf_init(&disp_buf, buf, NULL, LV_HOR_RES_MAX * 5);
+  static lv_color_t buf[LV_HOR_RES_MAX * 10];
+  lv_disp_buf_init(&disp_buf, buf, NULL, LV_HOR_RES_MAX * 10);
   printf("main: lv_disp_buf_init() done\r\n");
 
   lv_disp_drv_t disp_drv;
