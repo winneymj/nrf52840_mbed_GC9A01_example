@@ -149,7 +149,7 @@
             ]
         },
         {
-            "label": "nrfutil flash DFU pkg",
+            "label": "ada-nrfutil flash DFU pkg",
             "group": "build",
             "command": "adafruit-nrfutil",
             "args": [
@@ -189,7 +189,7 @@
                 "isDefault": true
             },
             "dependsOrder": "sequence",
-            "dependsOn": ["compile release", "ada-nrfutil app hex to DFU zip", "nrfutil flash DFU pkg"]
+            "dependsOn": ["compile release", "ada-nrfutil app hex to DFU zip", "ada-nrfutil flash DFU pkg"]
         },
         {
             "label": "compile debug",
