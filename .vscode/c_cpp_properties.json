@@ -223,7 +223,7 @@
                 "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x",
                 "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_NRF52",
                 "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_NRF52/TARGET_MCU_NRF52840",
-                "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_NRF52/TARGET_MCU_NRF52840/TARGET_NRF52840_FEATHER",
+                "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_NRF52/TARGET_MCU_NRF52840/TARGET_ADAFRUIT_NRF52840_FEATHER",
                 "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_NRF52/TARGET_MCU_NRF52840/config",
                 "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_NRF52/TARGET_MCU_NRF52840/device",
                 "${workspaceFolder}/mbed-os/targets/TARGET_NORDIC/TARGET_NRF5x/TARGET_SDK_15_0",

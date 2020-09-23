@@ -34,7 +34,7 @@
                 "-t",
                 "GCC_ARM",
                 "-m",
-                "NRF52840_FEATHER"
+                "ADAFRUIT_NRF52840_FEATHER"
             ]
         },
         {
@@ -43,9 +43,9 @@
             "command": "python",
             "args": [
                 "${workspaceFolder}\\uf2\\utils\\uf2conv.py",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_update.bin",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_update.bin",
                 "-o",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\flash.uf2",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\flash.uf2",
                 "-c",
                 "-b",
                 "0x26000",
@@ -73,8 +73,8 @@
                 "--sd-req",
                 "0x009D",
                 "--application",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex.zip"
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex.zip"
             ],
             "presentation": {
                 "echo": true,
@@ -97,8 +97,8 @@
                 "--sd-req",
                 "0x00B6",
                 "--application",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex.zip"
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex.zip"
             ],
             "presentation": {
                 "echo": true,
@@ -115,9 +115,9 @@
             "command": "python",
             "args": [
                 "${workspaceFolder}\\uf2\\utils\\uf2conv.py",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex",
                 "-o",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\flash.uf2",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\flash.uf2",
                 "-c",
                 "-f",
                 "0xADA52840"
@@ -140,7 +140,7 @@
                 "dfu",
                 "serial",
                 "-pkg",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\flash.uf2",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\flash.uf2",
                 "-p",
                 "COM7",
                 "-b",
@@ -157,7 +157,7 @@
                 "dfu",
                 "serial",
                 "-pkg",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex.zip",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}_application.hex.zip",
                 "-p",
                 "COM7",
                 "-b",
@@ -174,7 +174,7 @@
                 "dfu",
                 "serial",
                 "-pkg",
-                "${workspaceFolder}\\BUILD\\NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex.zip",
+                "${workspaceFolder}\\BUILD\\ADAFRUIT_NRF52840_FEATHER\\GCC_ARM-RELEASE\\${workspaceFolderBasename}.hex.zip",
                 "-p",
                 "COM7",
                 "-b",
@@ -201,7 +201,7 @@
                 "-t",
                 "GCC_ARM",
                 "-m",
-                "NRF52840_FEATHER",
+                "ADAFRUIT_NRF52840_FEATHER",
                 "--flash"
             ]
         },
@@ -215,7 +215,7 @@
                 "-t",
                 "GCC_ARM",
                 "-m",
-                "NRF52840_FEATHER",
+                "ADAFRUIT_NRF52840_FEATHER",
                 "--flash"
             ]
         }
@@ -244,7 +244,7 @@
 //             "message": 5
 //         }
 //     },
-//     "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "NRF52840_FEATHER"],
+//     "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "ADAFRUIT_NRF52840_FEATHER"],
 //     "windows": {
 //         "command": "mbed.exe"
 //     }
@@ -273,7 +273,7 @@
 //                 "panel": "shared"
 //             },
 //             // arg passing example: in this case is executed make QUIET=0
-//             "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "NRF52840_FEATHER"],
+//             "args": ["compile", "--profile=debug", "-t", "GCC_ARM", "-m", "ADAFRUIT_NRF52840_FEATHER"],
 //             // Use the standard less compilation problem matcher.
 //             "problemMatcher": {
 //                 "owner": "cpp",

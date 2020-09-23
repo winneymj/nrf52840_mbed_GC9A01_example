@@ -7,6 +7,7 @@
 #include "USBConsole.h"
 #include <lvgl/lvgl.h>
 #include <lv_drivers/display/GC9A01.h>
+#include "pebble_types.h"
 
 #define LVGL_TICK 5
 // 5 milliseconds (5000 microseconds)
@@ -18,8 +19,12 @@
 #define M_PI           3.14159265358979323846
 #endif
 
-static int32_t sHours = 4;
-static int32_t sMinutes = 45;
+#define PADDING 10
+
+static int32_t s_second = 10;
+static int32_t s_hour = 4;
+static int32_t s_minute = 45;
+static uint8_t s_number_time_units;
 
 Ticker ticker;
 DigitalOut led1(LED_RED);
@@ -31,6 +36,10 @@ static int32_t getAngleForHour(int hour) {
 static int32_t getAngleForMinutes(int minutes) {
   return (minutes * 360) / 60;
 }
+
+#define TIME_ANGLE(time) s_minute * (TRIG_MAX_ANGLE / 60)
+#define HOUR_ANGLE(hour) s_hour * (TRIG_MAX_ANGLE / 12)
+
 
 void lvl_ticker_func()
 {
@@ -84,43 +93,123 @@ lv_area_t bounds_inset(const lv_area_t &bounds, const lv_coord_t offset) {
   return retVal;
 }
 
-lv_area_t get_bounds(const lv_obj_t *obj) {
+lv_area_t layer_get_bounds(const lv_obj_t *obj) {
   lv_area_t cords_p;
   lv_obj_get_coords(obj, &cords_p);
   return cords_p;
 }
 
-static lv_obj_t *s_background_obj;
-#define BOUNDS_WIDTH(obj) (obj.x2 - obj.x1) 
-#define BOUNDS_HEIGHT(obj) (obj.y2 - obj.y1) 
+void set_number_time_units(uint8_t number_time_units) {
+  s_number_time_units = number_time_units;
+}
 
-void window_load() {
-  // Get default display
-  lv_obj_t *screen = lv_scr_act();
+void graphics_fill_radial(GContext * ctx, GRect rect, GOvalScaleMode scale_mode,
+                          uint16_t inset_thickness, int32_t angle_start, int32_t angle_end)
+{
+  /*Create style for the Arcs*/
+  static lv_style_t style;
+  lv_style_copy(&style, &lv_style_plain);
+  style.line.width = inset_thickness;                       /*Arc width*/
 
-  // Fill background with blue
-  static lv_style_t style_screen;
-  lv_style_copy(&style_screen, &lv_style_plain);
-  style_screen.body.main_color = LV_COLOR_BLUE;
-  style_screen.body.grad_color = LV_COLOR_BLUE;  // Comment this out to get a graduated blue->white
-  lv_obj_set_style(screen, &style_screen);
+  lv_arc_set_style
 
-  // Get the bounds of the screen
-  lv_area_t bounds = get_bounds(screen);
+  /*Create an Arc*/
+  lv_obj_t * arc = lv_arc_create(ctx, NULL);
+  lv_arc_set_style(arc, LV_ARC_STYLE_MAIN, &style);          /*Use the new style*/
+  lv_arc_set_angles(arc, angle_start, angle_end);
+  if (scale_mode == GOvalScaleModeFitCircle)
+  {
+    lv_obj_set_size(arc, rect.size.w, rect.size.h);
+  }
+  else
+  {
+    /* code */
+  }
+  
+  lv_obj_align(arc, NULL, LV_ALIGN_CENTER, 0, 0);
+}
 
-  // Create background object base rectangle
-  s_background_obj = lv_obj_create(screen, NULL);
-  lv_obj_set_size(s_background_obj, BOUNDS_WIDTH(bounds), BOUNDS_HEIGHT(bounds));
+// @TODO this does not return unobstructed.
+static GRect layer_get_unobstructed_bounds(Layer *layer) {
+  lv_area_t area = layer_get_bounds(layer);
+  GRect retVal;
+  retVal.origin.x = area.x1;
+  retVal.origin.y = area.y1;
+  retVal.size.w =   area.x2 = area.x1;
+  retVal.size.h =   area.y2 = area.y1;
+  return retVal; 
+}
 
-  // Place it hidden off the bottom of the screen
-  lv_obj_set_pos(s_background_obj, bounds.x1, bounds.y2);
+static GRect prv_calculate_rect(Layer *layer, uint8_t arc_id) {
+  return grect_inset(layer_get_unobstructed_bounds(layer),
+                     GEdgeInsets(PADDING * (s_number_time_units * arc_id)));
+}
 
-  // Fill base rectangle with yellow
-  static lv_style_t style_background;
-  lv_style_copy(&style_background, &lv_style_plain);
-  style_background.body.main_color = LV_COLOR_YELLOW;
-  style_background.body.grad_color = LV_COLOR_YELLOW;  // Comment this out to get a graduated blue->white
-  lv_obj_set_style(s_background_obj, &style_background);
+static uint16_t prv_get_stroke_width(Layer *layer) {
+  GRect bounds = layer_get_unobstructed_bounds(layer);
+  return ((bounds.size.w / s_number_time_units) / 2) - PADDING;
+}
+
+// Draw an arc with given inner/outer radii
+void prv_draw_arc(GContext *ctx, Layer *layer, uint8_t arc_id, uint32_t end_angle) {
+  GRect rect = prv_calculate_rect(layer, arc_id);
+  uint16_t thickness = prv_get_stroke_width(layer);
+
+  if (end_angle == 0) {
+    graphics_fill_radial(ctx,
+                         rect,
+                         GOvalScaleModeFitCircle,
+                         thickness,
+                         0,
+                         TRIG_MAX_ANGLE);
+  } else {
+    graphics_fill_radial(ctx,
+                         rect,
+                         GOvalScaleModeFitCircle,
+                         thickness,
+                         0,
+                         end_angle);
+  }
+}
+
+// Handle representation for seconds
+void draw_seconds(GContext *ctx, uint8_t seconds, Layer *layer) {
+  prv_draw_arc(ctx, layer, 0, TIME_ANGLE(seconds));
+}
+
+// Handle representation for minutes
+void draw_minutes(GContext *ctx, uint8_t minutes, Layer *layer) {
+  prv_draw_arc(ctx, layer, 1, TIME_ANGLE(minutes));
+}
+
+// Handle representation for hours
+void draw_hours(GContext *ctx, uint8_t hours, Layer *layer) {
+  prv_draw_arc(ctx, layer, 2, HOUR_ANGLE(hours));
+}
+
+void graphics_context_set_fill_color(GContext *ctx, GColor color) {
+  static lv_style_t style;
+  lv_style_copy(&style, &lv_style_plain);
+  style.body.main_color = color;
+  style.body.grad_color = color;
+  lv_obj_set_style(ctx, &style);
+}
+
+// Set the color for drawing routines
+static void prv_set_color(GContext *ctx, GColor color) {
+  graphics_context_set_fill_color(ctx, color);
+}
+
+// Update the watchface display
+static void prv_update_display(Layer *layer, GContext *ctx) {
+  prv_set_color(ctx, GColorRichBrilliantLavender);
+  draw_seconds(ctx, s_second, layer);
+
+  prv_set_color(ctx, GColorVividViolet);
+  draw_minutes(ctx, s_minute, layer);
+
+  prv_set_color(ctx, GColorBlueMoon);
+  draw_hours(ctx, s_hour % 12, layer);
 }
 
 // void pebble_circle_watchface(void) {
@@ -190,48 +279,6 @@ void window_load() {
 //   lv_obj_set_pos(btn2, 115, 5);
 // }
 
-void lv_ex_page_1(void)
-{
-    /*Create a scroll bar style*/
-    static lv_style_t style_bg;
-    lv_style_copy(&style_bg, &lv_style_plain);
-    style_bg.body.border.color = LV_COLOR_BLACK;
-    style_bg.body.border.width = 1;
-    static lv_style_t style_scrl;
-    lv_style_copy(&style_scrl, &lv_style_plain);
-    style_scrl.body.border.color = LV_COLOR_BLACK;
-    // style_bg.body.main_color = LV_COLOR_BLACK;
-    // style_bg.body.grad_color = LV_COLOR_BLACK;
-    // static lv_style_t style_sb;
-    // lv_style_copy(&style_sb, &lv_style_pretty);
-    // static lv_style_t style_sb;
-    // lv_style_copy(&style_sb, &lv_style_scr);
-    // style_sb.body.main_color = LV_COLOR_BLACK;
-    // style_sb.body.grad_color = LV_COLOR_BLACK;
-    // style_sb.body.border.color = LV_COLOR_WHITE;
-    // style_sb.body.border.width = 1;
-    // style_sb.body.border.opa = LV_OPA_70;
-    // style_sb.body.radius = 30;
-    // style_sb.body.opa = LV_OPA_60;
-    // style_sb.body.padding.right = 3;
-    // style_sb.body.padding.bottom = 3;
-    // style_sb.body.padding.inner = 8;        /*Scrollbar width*/
-
-    /*Create a page*/
-    lv_obj_t * page = lv_page_create(lv_scr_act(), NULL);
-    lv_obj_set_size(page, 150, 150);
-    lv_obj_align(page, NULL, LV_ALIGN_CENTER, 0, 0);
-    lv_page_set_style(page, LV_PAGE_STYLE_BG, &style_bg);           /*Set the scrollbar style*/
-    lv_page_set_style(page, LV_PAGE_STYLE_SCRL, &style_scrl);           /*Set the scrollbar style*/
-
-    /*Create a label on the page*/
-    lv_obj_t * label = lv_label_create(page, NULL);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_BREAK);            /*Automatically break long lines*/
-    lv_obj_set_width(label, lv_page_get_fit_width(page));          /*Set the label width to max value to not show hor. scroll bars*/
-    lv_label_set_text(label, "this is a long piece of text to try out how the label text is displayed\n"
-                             "wonder how well it works?");
-}
-
 //--------------------------------------------------------------------------------------
 
 // main() runs in its own thread in the OS
@@ -273,33 +320,11 @@ int main()
   // Set callback for lv_task_handler to redraw the screen if necessary
   queue.call_every(10, callback(&eventcb));
 
-  window_load();
+  set_number_time_units(3);
 
-  // lv_ex_page_1();
-
-  /* INITIALIZE AN ANIMATION
-  *-----------------------*/
-
-  lv_anim_t a;
-  lv_anim_init(&a);
-
-  /* MANDATORY SETTINGS
-  *------------------*/
-
-  /*Set the "animator" function*/
-  lv_anim_set_exec_cb(&a, s_background_obj, (lv_anim_exec_xcb_t)lv_obj_set_y); 
-
-  /*Length of the animation [ms]*/
-  lv_anim_set_time(&a, 400, 0);
-
-  lv_anim_set_path_cb(&a, lv_anim_path_linear);
-
-  /*Set start and end values. E.g. 0, 150*/
-  lv_anim_set_values(&a, 240, 0);
-
-  /* START THE ANIMATION
-  *------------------*/
-  lv_anim_create(&a);
+  // GContext is the screen, Layer is the object
+  prv_update_display();
+  // pebble_circle_watchface();
 
   queue.dispatch_forever();
 

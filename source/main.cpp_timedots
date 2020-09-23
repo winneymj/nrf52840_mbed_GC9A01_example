@@ -84,111 +84,78 @@ lv_area_t bounds_inset(const lv_area_t &bounds, const lv_coord_t offset) {
   return retVal;
 }
 
-lv_area_t get_bounds(const lv_obj_t *obj) {
+lv_area_t layer_get_bounds(const lv_obj_t *obj) {
   lv_area_t cords_p;
   lv_obj_get_coords(obj, &cords_p);
   return cords_p;
 }
 
-static lv_obj_t *s_background_obj;
-#define BOUNDS_WIDTH(obj) (obj.x2 - obj.x1) 
-#define BOUNDS_HEIGHT(obj) (obj.y2 - obj.y1) 
-
-void window_load() {
-  // Get default display
-  lv_obj_t *screen = lv_scr_act();
-
+void pebble_circle_watchface(void) {
   // Fill background with blue
   static lv_style_t style_screen;
   lv_style_copy(&style_screen, &lv_style_plain);
   style_screen.body.main_color = LV_COLOR_BLUE;
   style_screen.body.grad_color = LV_COLOR_BLUE;  // Comment this out to get a graduated blue->white
-  lv_obj_set_style(screen, &style_screen);
+  lv_obj_set_style(lv_scr_act(), &style_screen);
 
-  // Get the bounds of the screen
-  lv_area_t bounds = get_bounds(screen);
+  // Get bounds
+  lv_area_t bounds = layer_get_bounds(lv_scr_act());
 
-  // Create background object base rectangle
-  s_background_obj = lv_obj_create(screen, NULL);
-  lv_obj_set_size(s_background_obj, BOUNDS_WIDTH(bounds), BOUNDS_HEIGHT(bounds));
+  // 12 hours only with maximim size
+  sHours -= (sHours > 12) ? 12 : 0;
 
-  // Place it hidden off the bottom of the screen
-  lv_obj_set_pos(s_background_obj, bounds.x1, bounds.y2);
+  // Minutes are expanding circle arc
+  int minuteAngle = getAngleForMinutes(sMinutes);
+  lv_area_t frame = bounds_inset(bounds, (4 * INSET));
 
-  // Fill base rectangle with yellow
-  static lv_style_t style_background;
-  lv_style_copy(&style_background, &lv_style_plain);
-  style_background.body.main_color = LV_COLOR_YELLOW;
-  style_background.body.grad_color = LV_COLOR_YELLOW;  // Comment this out to get a graduated blue->white
-  lv_obj_set_style(s_background_obj, &style_background);
+  /*Create style for the Arcs*/
+  static lv_style_t style;
+  lv_style_copy(&style, &lv_style_plain);
+  style.line.color = LV_COLOR_MAKE(0x88, 0x8A, 0xD3); /*Arc color These are 888 numbers */
+  style.line.width = 20;                       /*Arc width*/
+  printf("style.line.color.full=0x%hx\r\n", style.line.color.full);
+
+  /*Create an Arc*/
+  lv_obj_t * arc = lv_arc_create(lv_scr_act(), NULL);
+  lv_arc_set_style(arc, LV_ARC_STYLE_MAIN, &style);          /*Use the new style*/
+  lv_arc_set_angles(arc, minuteAngle - 180, 0);
+  lv_obj_set_size(arc, frame.x2, frame.y2);
+  lv_obj_align(arc, NULL, LV_ALIGN_CENTER, 0, 0);
+
+  /*Create style for the dots*/
+  static lv_style_t styleBlack;
+  lv_style_copy(&styleBlack, &lv_style_plain);
+  styleBlack.body.main_color = LV_COLOR_BLACK;
+  styleBlack.body.grad_color = LV_COLOR_BLACK;
+  styleBlack.body.radius = LV_RADIUS_CIRCLE;
+
+  static lv_style_t styleWhite;
+  lv_style_copy(&styleWhite, &styleBlack);
+  styleWhite.body.main_color = LV_COLOR_WHITE;
+  styleWhite.body.grad_color = LV_COLOR_WHITE;
+
+  // create new smaller bounds object using the style margin
+  lv_area_t newBounds = bounds_inset(bounds, (2.2 * HOURS_RADIUS));
+
+  // Hours are dots
+  for (int i = 0; i < 12; i++) {
+    int hourPos = getAngleForHour(i);
+    lv_point_t pos = pointFromPolar(newBounds, hourPos);
+    // printf("pointFromPolar = %d, %d\r\n", pos.x, pos.y);
+
+    // Create object to draw
+    lv_obj_t *btn = lv_obj_create(lv_scr_act(), NULL);
+
+    lv_obj_set_style(btn, i <= sHours ? &styleWhite : &styleBlack);
+    lv_obj_set_size(btn, HOURS_RADIUS, HOURS_RADIUS);
+    lv_obj_set_pos(btn, pos.x - (HOURS_RADIUS / 2), pos.y - (HOURS_RADIUS / 2));
+  }
+
+  lv_obj_t *btn2 = lv_obj_create(lv_scr_act(), NULL);
+  lv_obj_set_style(btn2, &styleBlack);
+  lv_obj_set_size(btn2, HOURS_RADIUS, HOURS_RADIUS);
+  lv_obj_set_pos(btn2, 115, 5);
 }
-
-// void pebble_circle_watchface(void) {
-//   // Fill background with blue
-//   static lv_style_t style_screen;
-//   lv_style_copy(&style_screen, &lv_style_plain);
-//   style_screen.body.main_color = LV_COLOR_BLUE;
-//   style_screen.body.grad_color = LV_COLOR_BLUE;  // Comment this out to get a graduated blue->white
-//   lv_obj_set_style(lv_scr_act(), &style_screen);
-
-//   // Get bounds
-//   lv_area_t bounds = layer_get_bounds(lv_scr_act());
-
-//   // 12 hours only with maximim size
-//   sHours -= (sHours > 12) ? 12 : 0;
-
-//   // Minutes are expanding circle arc
-//   int minuteAngle = getAngleForMinutes(sMinutes);
-//   lv_area_t frame = bounds_inset(bounds, (4 * INSET));
-
-//   /*Create style for the Arcs*/
-//   static lv_style_t style;
-//   lv_style_copy(&style, &lv_style_plain);
-//   style.line.color = LV_COLOR_MAKE(0x88, 0x8A, 0xD3); /*Arc color These are 888 numbers */
-//   style.line.width = 20;                       /*Arc width*/
-//   printf("style.line.color.full=0x%hx\r\n", style.line.color.full);
-
-//   /*Create an Arc*/
-//   lv_obj_t * arc = lv_arc_create(lv_scr_act(), NULL);
-//   lv_arc_set_style(arc, LV_ARC_STYLE_MAIN, &style);          /*Use the new style*/
-//   lv_arc_set_angles(arc, minuteAngle - 180, 0);
-//   lv_obj_set_size(arc, frame.x2, frame.y2);
-//   lv_obj_align(arc, NULL, LV_ALIGN_CENTER, 0, 0);
-
-//   /*Create style for the dots*/
-//   static lv_style_t styleBlack;
-//   lv_style_copy(&styleBlack, &lv_style_plain);
-//   styleBlack.body.main_color = LV_COLOR_BLACK;
-//   styleBlack.body.grad_color = LV_COLOR_BLACK;
-//   styleBlack.body.radius = LV_RADIUS_CIRCLE;
-
-//   static lv_style_t styleWhite;
-//   lv_style_copy(&styleWhite, &styleBlack);
-//   styleWhite.body.main_color = LV_COLOR_WHITE;
-//   styleWhite.body.grad_color = LV_COLOR_WHITE;
-
-//   // create new smaller bounds object using the style margin
-//   lv_area_t newBounds = bounds_inset(bounds, (2.2 * HOURS_RADIUS));
-
-//   // Hours are dots
-//   for (int i = 0; i < 12; i++) {
-//     int hourPos = getAngleForHour(i);
-//     lv_point_t pos = pointFromPolar(newBounds, hourPos);
-//     // printf("pointFromPolar = %d, %d\r\n", pos.x, pos.y);
-
-//     // Create object to draw
-//     lv_obj_t *btn = lv_obj_create(lv_scr_act(), NULL);
-
-//     lv_obj_set_style(btn, i <= sHours ? &styleWhite : &styleBlack);
-//     lv_obj_set_size(btn, HOURS_RADIUS, HOURS_RADIUS);
-//     lv_obj_set_pos(btn, pos.x - (HOURS_RADIUS / 2), pos.y - (HOURS_RADIUS / 2));
-//   }
-
-//   lv_obj_t *btn2 = lv_obj_create(lv_scr_act(), NULL);
-//   lv_obj_set_style(btn2, &styleBlack);
-//   lv_obj_set_size(btn2, HOURS_RADIUS, HOURS_RADIUS);
-//   lv_obj_set_pos(btn2, 115, 5);
-// }
 
 void lv_ex_page_1(void)
 {
@@ -273,33 +240,9 @@ int main()
   // Set callback for lv_task_handler to redraw the screen if necessary
   queue.call_every(10, callback(&eventcb));
 
-  window_load();
+  pebble_circle_watchface();
 
   // lv_ex_page_1();
-
-  /* INITIALIZE AN ANIMATION
-  *-----------------------*/
-
-  lv_anim_t a;
-  lv_anim_init(&a);
-
-  /* MANDATORY SETTINGS
-  *------------------*/
-
-  /*Set the "animator" function*/
-  lv_anim_set_exec_cb(&a, s_background_obj, (lv_anim_exec_xcb_t)lv_obj_set_y); 
-
-  /*Length of the animation [ms]*/
-  lv_anim_set_time(&a, 400, 0);
-
-  lv_anim_set_path_cb(&a, lv_anim_path_linear);
-
-  /*Set start and end values. E.g. 0, 150*/
-  lv_anim_set_values(&a, 240, 0);
-
-  /* START THE ANIMATION
-  *------------------*/
-  lv_anim_create(&a);
 
   queue.dispatch_forever();
 

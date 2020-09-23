@@ -1,0 +1,117 @@
+/* mbed Microcontroller Library
+ * Copyright (c) 2018 ARM Limited
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include "mbed.h"
+#include "USBConsole.h"
+
+#include "nrfx_spim.h"
+#include "app_util_platform.h"
+#include "nrf_gpio.h"
+#include "nrf_delay.h"
+#include "boards.h"
+#include "app_error.h"
+#include <string.h>
+// #include "nrf_log.h"
+// #include "nrf_log_ctrl.h"
+// #include "nrf_log_default_backends.h"
+
+#if 0
+#define DEBUG_PRINTF(...) do { printf(__VA_ARGS__); } while(0)
+#else
+#define DEBUG_PRINTF(...) {}
+#endif
+
+#define NRFX_SPIM_SCK_PIN  SPI_PSELSCK0
+#define NRFX_SPIM_MOSI_PIN SPI_PSELMOSI0
+#define NRFX_SPIM_MISO_PIN NRFX_SPIM_PIN_NOT_USED
+#define NRFX_SPIM_SS_PIN   SPI_PSELSS0
+#define NRFX_SPIM_DCX_PIN  NRFX_SPIM_PIN_NOT_USED
+// #define NRFX_SPIM_DCX_PIN  P0_6
+
+#define SPI_INSTANCE  3                                           /**< SPI instance index. */
+static const nrfx_spim_t spi = NRFX_SPIM_INSTANCE(SPI_INSTANCE);  /**< SPI instance. */
+
+static volatile bool spi_xfer_done;  /**< Flag used to indicate that SPI instance completed the transfer. */
+
+#define TEST_STRING "Nordic123456789012345678901234567890"
+static uint8_t       m_tx_buf[] = TEST_STRING;           /**< TX buffer. */
+static uint8_t       m_rx_buf[sizeof(TEST_STRING) + 1];  /**< RX buffer. */
+static const uint8_t m_length = sizeof(m_tx_buf);        /**< Transfer length. */
+DigitalOut led1(LED_BLUE);
+
+void spim_event_handler(nrfx_spim_evt_t const * p_event,
+                       void *                  p_context)
+{
+    spi_xfer_done = true;
+    DEBUG_PRINTF("Transfer completed.\r\n");
+    // NRF_LOG_INFO("Transfer completed.");
+    // if (m_rx_buf[0] != 0)
+    // {
+    //     NRF_LOG_INFO(" Received:");
+    //     NRF_LOG_HEXDUMP_INFO(m_rx_buf, strlen((const char *)m_rx_buf));
+    // }
+}
+
+int main(void)
+{
+    DEBUG_PRINTF("Main: ENTER.\r\n");
+
+    // bsp_board_init(BSP_INIT_LEDS);
+
+    // APP_ERROR_CHECK(NRF_LOG_INIT(NULL));
+    // NRF_LOG_DEFAULT_BACKENDS_INIT();
+
+    DEBUG_PRINTF("Main: calling NRFX_SPIM_XFER_TRX.\r\n");
+
+    nrfx_spim_xfer_desc_t xfer_desc = NRFX_SPIM_XFER_TRX(m_tx_buf, m_length, m_rx_buf, m_length);
+
+    nrfx_spim_config_t spi_config = NRFX_SPIM_DEFAULT_CONFIG;
+    spi_config.frequency      = NRF_SPIM_FREQ_1M;
+    spi_config.ss_pin         = NRFX_SPIM_SS_PIN;
+    spi_config.miso_pin       = NRFX_SPIM_MISO_PIN;
+    spi_config.mosi_pin       = NRFX_SPIM_MOSI_PIN;
+    spi_config.sck_pin        = NRFX_SPIM_SCK_PIN;
+#if NRFX_SPIM_EXTENDED_ENABLED
+    spi_config.dcx_pin        = NRFX_SPIM_DCX_PIN;
+    spi_config.use_hw_ss      = true;
+#endif
+    spi_config.ss_active_high = false;
+
+    DEBUG_PRINTF("Main: calling nrfx_spim_init.\r\n");
+
+    APP_ERROR_CHECK(nrfx_spim_init(&spi, &spi_config, NULL, NULL));
+
+    // NRF_LOG_INFO("NRFX SPIM example started.");
+    DEBUG_PRINTF("Main: NRFX SPIM example started.\r\n");
+
+    while (1)
+    {
+        // Reset rx buffer and transfer done flag
+        memset(m_rx_buf, 0, m_length);
+        spi_xfer_done = false;
+
+        DEBUG_PRINTF("Main: calling nrfx_spim_xfer.\r\n");
+
+        // APP_ERROR_CHECK(nrfx_spim_xfer_dcx(&spi, &xfer_desc, 0, 15));
+        APP_ERROR_CHECK(nrfx_spim_xfer(&spi, &xfer_desc, 0));
+
+        DEBUG_PRINTF("Main: after calling nrfx_spim_xfer.\r\n");
+
+        // while (!spi_xfer_done)
+        // {
+        //   // DEBUG_PRINTF("Main: calling __WFE\r\n");
+        //     __WFE();
+        // }
+
+        // NRF_LOG_FLUSH();
+
+        // bsp_board_led_invert(BSP_BOARD_LED_0);
+        // nrf_delay_ms(200);
+        wait_us(1000 * 500);
+
+        DEBUG_PRINTF("Main: looping\r\n");
+        led1 = !led1;
+    }
+}

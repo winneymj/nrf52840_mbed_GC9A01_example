@@ -6,6 +6,7 @@
         "xutility": "cpp",
         "stdbool.h": "c",
         "cmath": "cpp",
-        "ostream": "cpp"
+        "ostream": "cpp",
+        "*.cpp_example_spim": "cpp"
     }
 }
