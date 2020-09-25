@@ -24,6 +24,13 @@ static int32_t sMinutes = 45;
 Ticker ticker;
 DigitalOut led1(LED_RED);
 
+/**********************
+ *  STATIC VARIABLES
+ **********************/
+/*Declare the "source code image" which is stored in the flash*/
+LV_IMG_DECLARE(warning)
+
+
 static int32_t getAngleForHour(int hour) {
   return (hour * 360) / 12;
 }
@@ -91,8 +98,8 @@ lv_area_t get_bounds(const lv_obj_t *obj) {
 }
 
 static lv_obj_t *s_background_obj;
-#define BOUNDS_WIDTH(obj) (obj.x2 - obj.x1) 
-#define BOUNDS_HEIGHT(obj) (obj.y2 - obj.y1) 
+#define BOUNDS_WIDTH(obj) (obj.x2 - obj.x1 + 1)
+#define BOUNDS_HEIGHT(obj) (obj.y2 - obj.y1 + 1) 
 
 void window_load() {
   // Get default display
@@ -100,10 +107,8 @@ void window_load() {
 
   // Fill background with blue
   static lv_style_t style_screen;
-  lv_style_copy(&style_screen, &lv_style_plain);
-  style_screen.body.main_color = LV_COLOR_BLUE;
-  style_screen.body.grad_color = LV_COLOR_BLUE;  // Comment this out to get a graduated blue->white
-  lv_obj_set_style(screen, &style_screen);
+  lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_BLUE);
+  lv_obj_add_style(screen, LV_OBJ_PART_MAIN, &style_screen);
 
   // Get the bounds of the screen
   lv_area_t bounds = get_bounds(screen);
@@ -117,10 +122,21 @@ void window_load() {
 
   // Fill base rectangle with yellow
   static lv_style_t style_background;
-  lv_style_copy(&style_background, &lv_style_plain);
-  style_background.body.main_color = LV_COLOR_YELLOW;
-  style_background.body.grad_color = LV_COLOR_YELLOW;  // Comment this out to get a graduated blue->white
-  lv_obj_set_style(s_background_obj, &style_background);
+  lv_style_set_bg_color(&style_background, LV_STATE_DEFAULT, LV_COLOR_YELLOW);
+  lv_style_set_border_width(&style_background, LV_STATE_DEFAULT, 0);
+
+  lv_obj_add_style(s_background_obj, LV_OBJ_PART_MAIN, &style_background);
+
+  // Now add warning image
+  lv_obj_t *icon = lv_img_create(s_background_obj, NULL);
+
+  /*From variable*/
+  lv_img_set_src(icon, &warning);
+
+  // Set position
+  // lv_obj_set_pos(icon, 100, 100);
+  // lv_obj_set_drag(icon, true);
+  lv_obj_align(icon, NULL, LV_ALIGN_CENTER, 0, 0);
 }
 
 // void pebble_circle_watchface(void) {
@@ -192,44 +208,44 @@ void window_load() {
 
 void lv_ex_page_1(void)
 {
-    /*Create a scroll bar style*/
-    static lv_style_t style_bg;
-    lv_style_copy(&style_bg, &lv_style_plain);
-    style_bg.body.border.color = LV_COLOR_BLACK;
-    style_bg.body.border.width = 1;
-    static lv_style_t style_scrl;
-    lv_style_copy(&style_scrl, &lv_style_plain);
-    style_scrl.body.border.color = LV_COLOR_BLACK;
-    // style_bg.body.main_color = LV_COLOR_BLACK;
-    // style_bg.body.grad_color = LV_COLOR_BLACK;
-    // static lv_style_t style_sb;
-    // lv_style_copy(&style_sb, &lv_style_pretty);
-    // static lv_style_t style_sb;
-    // lv_style_copy(&style_sb, &lv_style_scr);
-    // style_sb.body.main_color = LV_COLOR_BLACK;
-    // style_sb.body.grad_color = LV_COLOR_BLACK;
-    // style_sb.body.border.color = LV_COLOR_WHITE;
-    // style_sb.body.border.width = 1;
-    // style_sb.body.border.opa = LV_OPA_70;
-    // style_sb.body.radius = 30;
-    // style_sb.body.opa = LV_OPA_60;
-    // style_sb.body.padding.right = 3;
-    // style_sb.body.padding.bottom = 3;
-    // style_sb.body.padding.inner = 8;        /*Scrollbar width*/
+    // /*Create a scroll bar style*/
+    // static lv_style_t style_bg;
+    // lv_style_copy(&style_bg, &lv_style_plain);
+    // style_bg.body.border.color = LV_COLOR_BLACK;
+    // style_bg.body.border.width = 1;
+    // static lv_style_t style_scrl;
+    // lv_style_copy(&style_scrl, &lv_style_plain);
+    // style_scrl.body.border.color = LV_COLOR_BLACK;
+    // // style_bg.body.main_color = LV_COLOR_BLACK;
+    // // style_bg.body.grad_color = LV_COLOR_BLACK;
+    // // static lv_style_t style_sb;
+    // // lv_style_copy(&style_sb, &lv_style_pretty);
+    // // static lv_style_t style_sb;
+    // // lv_style_copy(&style_sb, &lv_style_scr);
+    // // style_sb.body.main_color = LV_COLOR_BLACK;
+    // // style_sb.body.grad_color = LV_COLOR_BLACK;
+    // // style_sb.body.border.color = LV_COLOR_WHITE;
+    // // style_sb.body.border.width = 1;
+    // // style_sb.body.border.opa = LV_OPA_70;
+    // // style_sb.body.radius = 30;
+    // // style_sb.body.opa = LV_OPA_60;
+    // // style_sb.body.padding.right = 3;
+    // // style_sb.body.padding.bottom = 3;
+    // // style_sb.body.padding.inner = 8;        /*Scrollbar width*/
 
-    /*Create a page*/
-    lv_obj_t * page = lv_page_create(lv_scr_act(), NULL);
-    lv_obj_set_size(page, 150, 150);
-    lv_obj_align(page, NULL, LV_ALIGN_CENTER, 0, 0);
-    lv_page_set_style(page, LV_PAGE_STYLE_BG, &style_bg);           /*Set the scrollbar style*/
-    lv_page_set_style(page, LV_PAGE_STYLE_SCRL, &style_scrl);           /*Set the scrollbar style*/
+    // /*Create a page*/
+    // lv_obj_t * page = lv_page_create(lv_scr_act(), NULL);
+    // lv_obj_set_size(page, 150, 150);
+    // lv_obj_align(page, NULL, LV_ALIGN_CENTER, 0, 0);
+    // lv_page_set_style(page, LV_PAGE_STYLE_BG, &style_bg);           /*Set the scrollbar style*/
+    // lv_page_set_style(page, LV_PAGE_STYLE_SCRL, &style_scrl);           /*Set the scrollbar style*/
 
-    /*Create a label on the page*/
-    lv_obj_t * label = lv_label_create(page, NULL);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_BREAK);            /*Automatically break long lines*/
-    lv_obj_set_width(label, lv_page_get_fit_width(page));          /*Set the label width to max value to not show hor. scroll bars*/
-    lv_label_set_text(label, "this is a long piece of text to try out how the label text is displayed\n"
-                             "wonder how well it works?");
+    // /*Create a label on the page*/
+    // lv_obj_t * label = lv_label_create(page, NULL);
+    // lv_label_set_long_mode(label, LV_LABEL_LONG_BREAK);            /*Automatically break long lines*/
+    // lv_obj_set_width(label, lv_page_get_fit_width(page));          /*Set the label width to max value to not show hor. scroll bars*/
+    // lv_label_set_text(label, "this is a long piece of text to try out how the label text is displayed\n"
+    //                          "wonder how well it works?");
 }
 
 //--------------------------------------------------------------------------------------
@@ -287,19 +303,20 @@ int main()
   *------------------*/
 
   /*Set the "animator" function*/
-  lv_anim_set_exec_cb(&a, s_background_obj, (lv_anim_exec_xcb_t)lv_obj_set_y); 
+  lv_anim_set_exec_cb(&a, (lv_anim_exec_xcb_t) lv_obj_set_y); 
+
+  /*Set the "animator" function*/
+  lv_anim_set_var(&a, s_background_obj); 
 
   /*Length of the animation [ms]*/
-  lv_anim_set_time(&a, 400, 0);
-
-  lv_anim_set_path_cb(&a, lv_anim_path_linear);
+  lv_anim_set_time(&a, 400);
 
   /*Set start and end values. E.g. 0, 150*/
   lv_anim_set_values(&a, 240, 0);
 
   /* START THE ANIMATION
   *------------------*/
-  lv_anim_create(&a);
+  lv_anim_start(&a); 
 
   queue.dispatch_forever();
 
