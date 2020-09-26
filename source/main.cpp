@@ -164,13 +164,14 @@ void window_load() {
   lv_obj_t * page = lv_obj_create(s_background_obj, NULL);
   lv_obj_add_style(page, LV_OBJ_PART_MAIN, &style_page);
   lv_obj_align(page, NULL, LV_ALIGN_IN_TOP_MID, 0, 40);
-  lv_obj_set_size(page, 145, 100);
+  lv_obj_set_width(page, 150);
+  lv_obj_set_height(page, 100);
 
   /*Create a label on the page*/
   lv_obj_t * label = lv_label_create(page, NULL);
 
   lv_label_set_long_mode(label, LV_LABEL_LONG_BREAK);            /*Automatically break long lines*/
-  lv_obj_set_width(label, lv_page_get_width_fit(s_background_obj));          /*Set the label width to max value to not show hor. scroll bars*/
+  lv_obj_set_width(label, 150);          /*Set the label width to max value to not show hor. scroll bars*/
   lv_label_set_text(label, "Battery is low!\nConnect the charger.");
 }
 
