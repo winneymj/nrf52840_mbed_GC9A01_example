@@ -101,6 +101,22 @@ static lv_obj_t *s_background_obj;
 #define BOUNDS_WIDTH(obj) (obj.x2 - obj.x1 + 1)
 #define BOUNDS_HEIGHT(obj) (obj.y2 - obj.y1 + 1) 
 
+void screen_colour() {
+static bool cntr = false;
+
+  static lv_style_t style_screen;
+  if (cntr) {
+    lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_BLACK);
+  } else {
+    lv_style_set_bg_color(&style_screen, LV_STATE_DEFAULT, LV_COLOR_WHITE);
+  }
+  cntr = !cntr;
+  
+  // Get default display
+  lv_obj_t *screen = lv_scr_act();
+  lv_obj_add_style(screen, LV_OBJ_PART_MAIN, &style_screen);
+}
+
 void window_load() {
   // Get default display
   lv_obj_t *screen = lv_scr_act();
@@ -115,15 +131,17 @@ void window_load() {
 
   // Create background object base rectangle
   s_background_obj = lv_obj_create(screen, NULL);
-  lv_obj_set_size(s_background_obj, BOUNDS_WIDTH(bounds), BOUNDS_HEIGHT(bounds));
+  lv_obj_set_size(s_background_obj, 150, 150);
+  lv_obj_align(s_background_obj, NULL, LV_ALIGN_IN_BOTTOM_MID, 0, 0);
 
   // Place it hidden off the bottom of the screen
-  lv_obj_set_pos(s_background_obj, bounds.x1, bounds.y2);
+  // lv_obj_set_pos(s_background_obj, bounds.x1, bounds.y2);
 
   // Fill base rectangle with yellow
   static lv_style_t style_background;
   lv_style_set_bg_color(&style_background, LV_STATE_DEFAULT, LV_COLOR_YELLOW);
-  lv_style_set_border_width(&style_background, LV_STATE_DEFAULT, 0);
+  lv_style_set_border_width(&style_background, LV_STATE_DEFAULT, 3);
+  lv_style_set_border_color(&style_background, LV_STATE_DEFAULT, LV_COLOR_BLACK);
 
   lv_obj_add_style(s_background_obj, LV_OBJ_PART_MAIN, &style_background);
 
@@ -134,9 +152,26 @@ void window_load() {
   lv_img_set_src(icon, &warning);
 
   // Set position
-  // lv_obj_set_pos(icon, 100, 100);
-  // lv_obj_set_drag(icon, true);
-  lv_obj_align(icon, NULL, LV_ALIGN_CENTER, 0, 0);
+  lv_obj_align(icon, NULL, LV_ALIGN_IN_TOP_LEFT, 6, 6);
+
+  // Create page style
+  static lv_style_t style_page;
+  lv_style_copy(&style_page, &style_background);
+  lv_style_set_text_font(&style_page, LV_STATE_DEFAULT, &lv_font_montserrat_18);  /*Set a larger font*/
+  lv_style_set_border_width(&style_page, LV_STATE_DEFAULT, 0);
+
+  // Create a page
+  lv_obj_t * page = lv_obj_create(s_background_obj, NULL);
+  lv_obj_add_style(page, LV_OBJ_PART_MAIN, &style_page);
+  lv_obj_align(page, NULL, LV_ALIGN_IN_TOP_MID, 0, 40);
+  lv_obj_set_size(page, 145, 100);
+
+  /*Create a label on the page*/
+  lv_obj_t * label = lv_label_create(page, NULL);
+
+  lv_label_set_long_mode(label, LV_LABEL_LONG_BREAK);            /*Automatically break long lines*/
+  lv_obj_set_width(label, lv_page_get_width_fit(s_background_obj));          /*Set the label width to max value to not show hor. scroll bars*/
+  lv_label_set_text(label, "Battery is low!\nConnect the charger.");
 }
 
 // void pebble_circle_watchface(void) {
@@ -287,9 +322,12 @@ int main()
   events::EventQueue queue;
 
   // Set callback for lv_task_handler to redraw the screen if necessary
-  queue.call_every(10, callback(&eventcb));
+  queue.call_every(5, callback(&eventcb));
 
   window_load();
+
+  // // Set callback for lv_task_handler to redraw the screen if necessary
+  // queue.call_every(1000, callback(&screen_colour));
 
   // lv_ex_page_1();
 
@@ -309,10 +347,10 @@ int main()
   lv_anim_set_var(&a, s_background_obj); 
 
   /*Length of the animation [ms]*/
-  lv_anim_set_time(&a, 400);
+  lv_anim_set_time(&a, 300);
 
   /*Set start and end values. E.g. 0, 150*/
-  lv_anim_set_values(&a, 240, 0);
+  lv_anim_set_values(&a, 240, 50);
 
   /* START THE ANIMATION
   *------------------*/
